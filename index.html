@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Invoice Admin</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .jumbotron {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+        .btn-primary:hover {
+            background-color: #004085;
+            border-color: #002752;
+        }
+        .table-responsive {
+            margin-top: 20px;
+        }
+        .table thead th {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-sm {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .btn-loading {
+            cursor: not-allowed;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+            max-width: 400px;
+            margin: auto;
+        }
+        #invoiceChart {
+            max-height: 250px; /* Smaller chart size */
+        }
+        footer {
+            background-color: #242424;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            margin-top: auto;
+        }
+    </style>
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="text-center mb-4">
+            <!-- Company Logo -->
+            <img src="eff1.png" alt="Company Logo" class="img-fluid mb-3" style="max-width: 150px;">
+            <!-- Company Name -->
+            <h2 class="company-name">EFF-ESS GROUP OF COMPANIES</h2>
+        </div>
+        <div class="jumbotron text-center">
+            <h1>Loan Invoice Admin Panel</h1>
+            <p>Check for new invoices and update loan item invoices</p>
+            <a href="view_invoice.php" class="btn btn-primary btn-lg">Go to Invoices</a>
+            <!-- Link to Add Invoice Page -->
+            <a href="add_invoice.php" class="btn btn-secondary btn-lg mt-3">Add New Invoice</a>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="container mt-5 chart-container">
+            <h3 class="text-center mb-4">Invoices Summary</h3>
+            <canvas id="invoiceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Chart.js Script -->
+    <script>
+        const ctx = document.getElementById('invoiceChart').getContext('2d');
+        const invoiceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Received', 'Completed'],
+                datasets: [{
+                    label: 'Invoice Status',
+                    data: [10, 20], // Replace with your data
+                    backgroundColor: ['#007bff', '#28a745'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                            }
+                        }
+                    },
+                    // Adding percentage in the center
+                    datalabels: {
+                        display: true,
+                        anchor: 'end',
+                        align: 'end',
+                        formatter: (value, context) => {
+                            let sum = 0;
+                            let dataArr = context.chart.data.datasets[0].data;
+                            dataArr.forEach(data => {
+                                sum += data;
+                            });
+                            let percentage = ((value / sum) * 100).toFixed(2) + '%';
+                            return percentage;
+                        },
+                        color: '#fff'
+                    }
+                }
+            }
+        });
+
+        function updateChart() {
+            fetch('get_invoice_summary.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.received !== undefined && data.completed !== undefined) {
+                        invoiceChart.data.datasets[0].data = [data.received, data.completed];
+                        invoiceChart.update();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching chart data:', error);
+                });
+        }
+
+        updateChart();
+    </script>
+    
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 EFF-ESS GROUP OF COMPANIES. All rights reserved.</p>
+        <p>Developed by SammyAI</p>
+    </footer>
+</body>
+</html>
